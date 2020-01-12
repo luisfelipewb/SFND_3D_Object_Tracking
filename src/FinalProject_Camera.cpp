@@ -233,6 +233,13 @@ int main(int argc, const char *argv[])
             // store matches in current data frame
             (dataBuffer.end()-1)->bbMatches = bbBestMatches;
 
+            /* Print bbMatches (for debug)
+            cout << "bbMatches contains: " << endl;
+            //std::map<int,int>::iterator it;
+            for (auto it=(dataBuffer.end()-1)->bbMatches.begin(); it!=(dataBuffer.end()-1)->bbMatches.end(); ++it )
+                cout << it->first << "->" << it->second << " ";
+            cout << endl;
+            */
             cout << "#8 : TRACK 3D OBJECT BOUNDING BOXES done" << endl;
 
 
@@ -276,7 +283,7 @@ int main(int argc, const char *argv[])
                     computeTTCCamera((dataBuffer.end() - 2)->keypoints, (dataBuffer.end() - 1)->keypoints, currBB->kptMatches, sensorFrameRate, ttcCamera);
                     //// EOF STUDENT ASSIGNMENT
 
-                    bVis = true;
+                    bVis = false;
                     if (bVis)
                     {
                         cv::Mat visImg = (dataBuffer.end() - 1)->cameraImg.clone();

@@ -154,5 +154,53 @@ void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev,
 
 void matchBoundingBoxes(std::vector<cv::DMatch> &matches, std::map<int, int> &bbBestMatches, DataFrame &prevFrame, DataFrame &currFrame)
 {
-    // ...
+    //std::cout << bbBestMatches << std::endl;
+    //Loop through each match
+    int currBoxCount = currFrame.boundingBoxes.size();
+    int prevBoxCount = prevFrame.boundingBoxes.size();
+    int max [currBoxCount][prevBoxCount] = { }; // Initialized with zeros
+
+    // For each match, loop through the bounding boxes of current and previous frame to find which boinding boxes contains it.
+    for (const cv::DMatch& match : matches)
+    {
+        for (const BoundingBox& bbCurr : currFrame.boundingBoxes)
+        {
+            for (const BoundingBox& bbPrev : prevFrame.boundingBoxes)
+            {
+                if (bbCurr.roi.contains(currFrame.keypoints[match.trainIdx].pt) &&
+                    bbPrev.roi.contains(prevFrame.keypoints[match.queryIdx].pt))
+                {
+                    max[bbCurr.boxID][bbPrev.boxID] += 1;
+                }
+            }
+        }
+    }
+
+    /* print matrix (for debug)
+    for (const BoundingBox& bbCurr : currFrame.boundingBoxes)
+    {
+        for (const BoundingBox& bbPrev : prevFrame.boundingBoxes)
+        {
+             std::cout << max[bbCurr.boxID][bbPrev.boxID] << " ";
+        }
+        std::cout << std::endl;
+    }
+    */
+
+    // For each box in the current frame, select the box from previous frame with the highest number of matches
+    for (const BoundingBox& bbCurr : currFrame.boundingBoxes)
+    {
+        int maximum = 0;
+        int index = 0;
+
+        for (const BoundingBox& bbPrev : prevFrame.boundingBoxes)
+        {
+            if (maximum < max[bbCurr.boxID][bbPrev.boxID])
+            {
+                maximum = max[bbCurr.boxID][bbPrev.boxID];
+                index = bbPrev.boxID;
+            }
+        }
+        bbBestMatches.insert (std::pair<int,int>(index,bbCurr.boxID));
+    }
 }
