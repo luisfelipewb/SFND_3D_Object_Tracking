@@ -133,7 +133,42 @@ void show3DObjects(std::vector<BoundingBox> &boundingBoxes, cv::Size worldSize, 
 // associate a given bounding box with the keypoints it contains
 void clusterKptMatchesWithROI(BoundingBox &boundingBox, std::vector<cv::KeyPoint> &kptsPrev, std::vector<cv::KeyPoint> &kptsCurr, std::vector<cv::DMatch> &kptMatches)
 {
-    // ...
+    //Create vector with all matches inside the ROI
+    std::vector<cv::DMatch> kptMatchesInROI;
+    for (const cv::DMatch& match : kptMatches)
+    {
+        if (boundingBox.roi.contains(kptsCurr[match.trainIdx].pt))
+        {
+            kptMatchesInROI.push_back(match);
+        }
+    }
+
+    //Create vector with distances between the matches inside ROI
+    std::vector<double> kptDistances;
+    double averageDist = 0;
+    for (const cv::DMatch& match : kptMatchesInROI)
+    {
+        double dist = cv::norm(kptsPrev[match.queryIdx].pt - kptsCurr[match.trainIdx].pt);
+        kptDistances.push_back(dist);
+        averageDist += dist;
+    }
+    averageDist = averageDist/kptDistances.size();
+
+    // Only take into account the matches that are not too far from the average
+    for (int i=0; i<kptDistances.size(); i++)
+    {
+        if (kptDistances[i] < averageDist+3)
+        {
+            boundingBox.kptMatches.push_back(kptMatchesInROI[i]);
+        }
+    }
+
+    /*
+    cout << "kptMatchesInitial.size: " << kptMatches.size() << endl;
+    cout << "kptMatchesInROI.size: " << kptMatchesInROI.size() << endl;
+    cout << "AverageDist: " << averageDist << endl;
+    cout << "kptMatchesFinal.size: " << boundingBox.kptMatches.size() << endl;
+    */
 }
 
 
