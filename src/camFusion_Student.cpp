@@ -148,7 +148,28 @@ void computeTTCCamera(std::vector<cv::KeyPoint> &kptsPrev, std::vector<cv::KeyPo
 void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev,
                      std::vector<LidarPoint> &lidarPointsCurr, double frameRate, double &TTC)
 {
-    // ...
+    //Organize x values in a sorted arary
+    vector<double> prevXPoints, currXPoints;
+
+    for (const LidarPoint& point : lidarPointsPrev)
+    {
+        prevXPoints.push_back(point.x);
+    }
+    std::sort(prevXPoints.begin(), prevXPoints.end());
+
+    for (const LidarPoint& point : lidarPointsCurr)
+    {
+        currXPoints.push_back(point.x);
+    }
+    std::sort(currXPoints.begin(), currXPoints.end());
+
+    // Get the second element in the sorted array to skip possible outliers
+    const double prevMinX = prevXPoints[1];
+    const double currMinX = currXPoints[1];
+
+    // calculate time to collision
+    const double dT = 1.0 / frameRate;
+    TTC = currMinX * dT / (prevMinX - currMinX);
 }
 
 
