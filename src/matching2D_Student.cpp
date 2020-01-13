@@ -1,7 +1,7 @@
 #include <numeric>
 #include "matching2D.hpp"
 
-bool csvOutput = false;
+bool csvOutput = true;
 
 using namespace std;
 
